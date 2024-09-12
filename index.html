@@ -137,43 +137,60 @@
 
         // Upload image to Firebase Storage and save details to Firestore
         async function uploadImage() {
-            try {
-                const file = imageInput.files[0];
-                if (!file) {
-                    alert('Please select an image to upload');
-                    return;
-                }
-
-                const storageRef = ref(storage, `images/${file.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, file);
-
-                uploadTask.on('state_changed',
-                    (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        progressBar.style.width = progress + '%';
-                    },
-                    (error) => {
-                        console.error('Error uploading image:', error);
-                    },
-                    async () => {
-                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        const { uid, displayName } = auth.currentUser;
-
-                        // Save image info in Firestore
-                        await addDoc(collection(db, 'uploadedImages'), {
-                            imageUrl: downloadURL,
-                            userName: displayName,
-                            userId: uid,
-                            timestamp: new Date()
-                        });
-
-                        fetchImages();  // Fetch images after uploading
-                    }
-                );
-            } catch (error) {
-                console.error('Error uploading image:', error);
-            }
+    try {
+        const file = imageInput.files[0];  // Get the selected file
+        if (!file) {
+            alert('Please select an image to upload');
+            console.log('No file selected');
+            return;
         }
+
+        // Log file information
+        console.log('File selected:', file.name, file.type, file.size);
+
+        // Create a storage reference with the file name
+        const storageRef = ref(storage, `images/${file.name}`);
+        console.log('Storage reference created:', storageRef);
+
+        // Start the file upload process
+        const uploadTask = uploadBytesResumable(storageRef, file);
+        console.log('Upload task started');
+
+        // Monitor the progress and handle the upload events
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                progressBar.style.width = progress + '%';  // Update progress bar
+            },
+            (error) => {
+                console.error('Error uploading image:', error);
+            },
+            async () => {
+                // Upload completed successfully, get download URL
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                console.log('File available at:', downloadURL);
+
+                const { uid, displayName } = auth.currentUser;
+                console.log('User details:', uid, displayName);
+
+                // Save the image URL and user info to Firestore
+                await addDoc(collection(db, 'uploadedImages'), {
+                    imageUrl: downloadURL,
+                    userName: displayName,
+                    userId: uid,
+                    timestamp: new Date()
+                });
+
+                console.log('Image details saved to Firestore');
+                fetchImages();  // Fetch images after successful upload
+            }
+        );
+    } catch (error) {
+        console.error('Error in uploadImage function:', error);
+    }
+}
+
 
         // Fetch all images from Firestore and display them
         async function fetchImages() {
