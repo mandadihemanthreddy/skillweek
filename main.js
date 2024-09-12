@@ -113,3 +113,4 @@ async function fetchImages() {
 window.signInWithGoogle = signInWithGoogle; 
 window.logoutUser = logoutUser; 
 window.uploadImage = uploadImage;
+
