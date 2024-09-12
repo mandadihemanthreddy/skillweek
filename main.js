@@ -102,4 +102,14 @@ async function fetchImages() {
         const imageData = doc.data(); 
         imagesContainer.innerHTML += ` 
             <div> 
-                <p>Uploaded by: ${imageData.userName}</p>
+                <p>Uploaded by: ${imageData.userName}</p
+                <img src="${imageData.imageUrl}" alt="Uploaded image" style="max-width: 300px;" /> 
+            </div> 
+        `; 
+    }); 
+} 
+ 
+// Attach functions to the window object 
+window.signInWithGoogle = signInWithGoogle; 
+window.logoutUser = logoutUser; 
+window.uploadImage = uploadImage;
